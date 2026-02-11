@@ -1,18 +1,19 @@
-import { Settings } from 'lucide-react'
+import { Leaf } from 'lucide-react'
 
-export function Navbar() {
+export function Navbar({ onSettingsClick }) {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-4 sm:px-6 bg-white/80 backdrop-blur-xl border-b border-black/5">
+    <nav className="fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-4 sm:px-6 bg-black/50 backdrop-blur-xl border-b border-white/10">
       <div className="flex items-center gap-2">
         <span className="text-2xl" role="img" aria-label="Brain">🧠</span>
-        <span className="font-semibold text-lg text-black text-glow">MindSeeds</span>
+        <span className="font-semibold text-lg text-white text-glow">MindSeeds</span>
       </div>
       <button
         type="button"
-        className="p-2 rounded-full hover:bg-black/5 transition-colors duration-300 touch-manipulation"
-        aria-label="Impostazioni"
+        onClick={onSettingsClick}
+        className="p-2 rounded-full hover:bg-white/10 transition-colors duration-300 touch-manipulation"
+        aria-label="Menu pacchetti"
       >
-        <Settings className="w-5 h-5 text-black" />
+        <Leaf className="w-5 h-5 text-white" />
       </button>
     </nav>
   )

@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
-/* Apple-style premium white theme */
+/* Dark theme */
 html,
 body {
   min-height: 100vh;
   margin: 0;
-  background: #fafafa;
-  color: #000;
+  background: #0a0a0a;
+  color: #fff;
 }
 
 #root {
@@ -14,10 +14,10 @@ body {
 }
 
 .text-glow {
-  text-shadow: 0 0 24px rgba(255, 255, 255, 0.9), 0 0 48px rgba(255, 255, 255, 0.4);
+  text-shadow: 0 0 24px rgba(255, 255, 255, 0.5), 0 0 48px rgba(255, 255, 255, 0.2);
 }
 
-/* Custom range slider - dark for light theme */
+/* Custom range slider - light for dark theme */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -27,7 +27,7 @@ input[type="range"] {
 input[type="range"]::-webkit-slider-track {
   height: 6px;
   border-radius: 3px;
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -36,24 +36,24 @@ input[type="range"]::-webkit-slider-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #000;
+  background: #fff;
   cursor: pointer;
   margin-top: -6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 input[type="range"]::-moz-range-track {
   height: 6px;
   border-radius: 3px;
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 input[type="range"]::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #000;
+  background: #fff;
   cursor: pointer;
   border: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }

@@ -27,8 +27,9 @@ function getPhaseAndScale(breathing, elapsed) {
   return { phase, scale }
 }
 
-export function BreathingCircle({ breathing, isPlaying, color }) {
+export function BreathingCircle({ breathing, isPlaying, color, size = 'small' }) {
   const [elapsed, setElapsed] = useState(0)
+  const isLarge = size === 'large'
 
   useEffect(() => {
     if (!isPlaying || !breathing) return
@@ -46,7 +47,7 @@ export function BreathingCircle({ breathing, isPlaying, color }) {
   return (
     <div className="flex items-center justify-center flex-shrink-0">
       <motion.div
-        className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 flex items-center justify-center"
+        className={`rounded-full border-4 flex items-center justify-center ${isLarge ? 'w-48 h-48 sm:w-64 sm:h-64 md:w-72 md:h-72' : 'w-16 h-16 sm:w-20 sm:h-20'}`}
         style={{
           borderColor: color,
           boxShadow: `0 0 16px ${color}40`,
@@ -59,7 +60,7 @@ export function BreathingCircle({ breathing, isPlaying, color }) {
           ease: 'easeInOut',
         }}
       >
-        <span className="text-xs sm:text-sm font-semibold text-black uppercase tracking-wider">
+        <span className={`font-semibold text-white uppercase tracking-wider ${isLarge ? 'text-xl sm:text-2xl' : 'text-xs sm:text-sm'}`}>
           {phase}
         </span>
       </motion.div>
