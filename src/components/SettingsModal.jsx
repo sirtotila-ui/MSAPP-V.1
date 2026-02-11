@@ -1,8 +1,9 @@
 import { X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { StateCard } from './StateCard'
+import { AmbientSounds } from './AmbientSounds'
 
-export function SettingsModal({ isOpen, onClose, brainStates, brainStatesOrder, selectedState, onSelectState }) {
+export function SettingsModal({ isOpen, onClose, brainStates, brainStatesOrder, selectedState, onSelectState, ambientSoundsProps }) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -22,7 +23,7 @@ export function SettingsModal({ isOpen, onClose, brainStates, brainStatesOrder, 
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white">Scegli pacchetto</h2>
+              <h2 className="text-lg font-semibold text-white">Menu</h2>
               <button
                 type="button"
                 onClick={onClose}
@@ -46,6 +47,11 @@ export function SettingsModal({ isOpen, onClose, brainStates, brainStatesOrder, 
                 />
               ))}
             </div>
+            {ambientSoundsProps && (
+              <div className="mt-6 pt-4 border-t border-white/10">
+                <AmbientSounds {...ambientSoundsProps} compact />
+              </div>
+            )}
           </motion.div>
         </>
       )}
