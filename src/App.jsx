@@ -26,13 +26,13 @@ function App() {
   const [metronomeOn, setMetronomeOn] = useState(true)
   const [holdVibrationOn, setHoldVibrationOn] = useState(true)
 
+  const currentState = brainStates[selectedState]
+
   const { startBinaural, stop, setVolume: setAudioVolume } = useAudioEngine()
   const { toggleSound, setVolume: setAmbientAudioVolume, activeSounds } = useAmbientSounds()
   useMetronomeSound(metronomeOn, isPlaying, metronomeVolume)
   useHoldVibration(holdVibrationOn, isPlaying, currentState?.breathing)
   useHoldVibrationSound(holdVibrationOn, isPlaying, currentState?.breathing)
-
-  const currentState = brainStates[selectedState]
 
   useEffect(() => {
     setAmbientAudioVolume(0.25)
