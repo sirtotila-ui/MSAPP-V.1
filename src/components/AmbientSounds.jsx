@@ -15,6 +15,8 @@ export function AmbientSounds({
   breathing,
   isPlaying,
   showVolumeBar = true,
+  holdVibrationOn,
+  onHoldVibrationToggle,
 }) {
   const [elapsed, setElapsed] = useState(0)
   const [tick, setTick] = useState(0)
@@ -89,6 +91,22 @@ export function AmbientSounds({
             />
             <span className="text-xs text-white/60 w-8">{ambientVolume}%</span>
           </div>
+        </div>
+      )}
+      {onHoldVibrationToggle != null && (
+        <div className={`flex items-center gap-2 ${compact ? 'mt-3' : 'mt-3'}`}>
+          <span className="text-xs text-white/60 shrink-0">Vibrazione durante hold</span>
+          <button
+            type="button"
+            onClick={onHoldVibrationToggle}
+            className={`rounded-xl px-3 py-1.5 text-sm font-medium border transition-colors ${
+              holdVibrationOn
+                ? 'bg-white/20 border-white/40 text-white'
+                : 'bg-black/30 border-white/10 text-white/60'
+            }`}
+          >
+            {holdVibrationOn ? 'On' : 'Off'}
+          </button>
         </div>
       )}
     </div>

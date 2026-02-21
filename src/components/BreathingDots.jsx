@@ -18,7 +18,7 @@ function getPhaseAndProgress(breathing, elapsed) {
   return { phase: 'HOLD2', progress: t - inhale - hold - exhale, phaseDuration: hold2 }
 }
 
-export function BreathingDots({ breathing, isPlaying, color }) {
+export function BreathingDots({ breathing, isPlaying, color, holdVibrationOn = true }) {
   const [elapsed, setElapsed] = useState(0)
 
   useEffect(() => {
@@ -48,13 +48,13 @@ export function BreathingDots({ breathing, isPlaying, color }) {
 
   let filledCount = 0
   let opacity = 1
-  let tremble = false
+  const isHoldPhase = phase === 'HOLD' || phase === 'HOLD2'
+  const tremble = holdVibrationOn && isHoldPhase
 
   if (phase === 'IN') {
     filledCount = Math.min(numDots, Math.floor(progress))
   } else if (phase === 'HOLD') {
     filledCount = numDots
-    tremble = true
   } else if (phase === 'OUT') {
     filledCount = numDots
     opacity = Math.max(0, 1 - progress / phaseDuration)
@@ -74,13 +74,13 @@ export function BreathingDots({ breathing, isPlaying, color }) {
             opacity: i < filledCount ? opacity : 0.3,
             boxShadow: i < filledCount ? `0 0 8px ${color}60` : 'none',
           }}
-          animate={tremble && i < filledCount ? {
-            scale: [1, 1.15, 1],
-            opacity: [opacity, opacity * 0.8, opacity],
+          animate={tremble ? {
+            x: [0, -2, 2, -2, 0],
+            scale: [1, 1.08, 1],
           } : {}}
           transition={
             tremble
-              ? { duration: 0.4, repeat: Infinity, repeatType: 'reverse' }
+              ? { duration: 0.15, repeat: Infinity, repeatType: 'loop' }
               : {}
           }
         />

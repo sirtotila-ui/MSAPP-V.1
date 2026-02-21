@@ -3,6 +3,8 @@ import { brainStates, brainStatesOrder } from './data/brainStates'
 import { useAudioEngine } from './hooks/useAudioEngine'
 import { useAmbientSounds } from './hooks/useAmbientSounds'
 import { useMetronomeSound } from './hooks/useMetronomeSound'
+import { useHoldVibration } from './hooks/useHoldVibration'
+import { useHoldVibrationSound } from './hooks/useHoldVibrationSound'
 import { Navbar } from './components/Navbar'
 import { StateCard } from './components/StateCard'
 import { BrainwaveVisualizer } from './components/BrainwaveVisualizer'
@@ -22,10 +24,13 @@ function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [scienceOpen, setScienceOpen] = useState(false)
   const [metronomeOn, setMetronomeOn] = useState(true)
+  const [holdVibrationOn, setHoldVibrationOn] = useState(true)
 
   const { startBinaural, stop, setVolume: setAudioVolume } = useAudioEngine()
   const { toggleSound, setVolume: setAmbientAudioVolume, activeSounds } = useAmbientSounds()
   useMetronomeSound(metronomeOn, isPlaying, metronomeVolume)
+  useHoldVibration(holdVibrationOn, isPlaying, currentState?.breathing)
+  useHoldVibrationSound(holdVibrationOn, isPlaying, currentState?.breathing)
 
   const currentState = brainStates[selectedState]
 
@@ -112,6 +117,8 @@ function App() {
           metronomeColor: currentState.color,
           breathing: currentState.breathing,
           isPlaying,
+          holdVibrationOn,
+          onHoldVibrationToggle: () => setHoldVibrationOn((v) => !v),
         }}
       />
 
@@ -130,6 +137,8 @@ function App() {
               breathing={currentState.breathing}
               isPlaying={isPlaying}
               showVolumeBar={false}
+              holdVibrationOn={holdVibrationOn}
+              onHoldVibrationToggle={() => setHoldVibrationOn((v) => !v)}
             />
           </div>
           {/* Center: player e tutto il resto, centrato verticalmente e orizzontalmente */}
@@ -139,6 +148,7 @@ function App() {
               breathing={currentState.breathing}
               isPlaying={isPlaying}
               color={currentState.color}
+              holdVibrationOn={holdVibrationOn}
             />
             {/* Indicatore IN / HOLD / OUT */}
             <BreathingCircle
@@ -204,6 +214,20 @@ function App() {
                       className="flex-1 w-full"
                     />
                     <span className="text-white/60 text-xs w-8 shrink-0">{metronomeVolume}%</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-white/60 text-xs shrink-0">Vibrazione durante hold</span>
+                    <button
+                      type="button"
+                      onClick={() => setHoldVibrationOn((v) => !v)}
+                      className={`rounded-xl px-3 py-1.5 text-sm font-medium border transition-colors ${
+                        holdVibrationOn
+                          ? 'bg-white/20 border-white/40 text-white'
+                          : 'bg-black/30 border-white/10 text-white/60'
+                      }`}
+                    >
+                      {holdVibrationOn ? 'On' : 'Off'}
+                    </button>
                   </div>
                 </div>
               </div>
