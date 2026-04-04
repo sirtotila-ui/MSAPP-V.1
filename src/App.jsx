@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect } from 'react'
+import { lazy, Suspense, useState, useCallback, useEffect, useMemo } from 'react'
 import { brainStates, brainStatesOrder } from './data/brainStates'
 import { getPhaseAndProgress } from './utils/breathing'
+import { loadSettings, saveSettings } from './utils/storage'
 import { useAudioEngine } from './hooks/useAudioEngine'
 import { useAmbientSounds } from './hooks/useAmbientSounds'
 import { useMetronomeSound } from './hooks/useMetronomeSound'
@@ -10,22 +11,25 @@ import { BrainwaveVisualizer } from './components/BrainwaveVisualizer'
 import { BreathingCircle } from './components/BreathingCircle'
 import { BreathingDots } from './components/BreathingDots'
 import { PlayerControls } from './components/PlayerControls'
-import { SettingsModal } from './components/SettingsModal'
-import { SciencePage } from './components/SciencePage'
 import { AmbientSounds } from './components/AmbientSounds'
 
+const SettingsModal = lazy(() => import('./components/SettingsModal').then((module) => ({ default: module.SettingsModal })))
+const SciencePage = lazy(() => import('./components/SciencePage').then((module) => ({ default: module.SciencePage })))
+const initialSettings = loadSettings() ?? {}
+
 function App() {
-  const [selectedState, setSelectedState] = useState('alpha')
+  const [selectedState, setSelectedState] = useState(initialSettings.selectedState ?? 'alpha')
   const [sessionState, setSessionState] = useState('idle')
-  const [volume, setVolume] = useState(70)
-  const [ambientVolume, setAmbientVolume] = useState(50)
-  const [metronomeVolume, setMetronomeVolume] = useState(50)
+  const [volume, setVolume] = useState(initialSettings.volume ?? 70)
+  const [ambientVolume, setAmbientVolume] = useState(initialSettings.ambientVolume ?? 50)
+  const [metronomeVolume, setMetronomeVolume] = useState(initialSettings.metronomeVolume ?? 50)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [scienceOpen, setScienceOpen] = useState(false)
-  const [metronomeOn, setMetronomeOn] = useState(true)
+  const [metronomeOn, setMetronomeOn] = useState(initialSettings.metronomeOn ?? true)
   const [countdownRemaining, setCountdownRemaining] = useState(null) // 3, 2, 1 poi null
   const [elapsed, setElapsed] = useState(0)
   const isPlaying = sessionState === 'playing'
+  const isPaused = sessionState === 'paused'
   const isCountingDown = sessionState === 'countdown'
   const isSessionActive = sessionState !== 'idle'
 
@@ -35,17 +39,27 @@ function App() {
   const breathingPattern = [breathing?.inhale, breathing?.hold, breathing?.exhale, breathing?.hold2]
     .filter((value) => value != null && value > 0)
     .join(' • ')
-  const statusLabel = isCountingDown ? 'Pronto' : isPlaying ? phaseInfo?.phase ?? 'IN' : 'Idle'
+  const statusLabel = isCountingDown ? 'Pronto' : isPlaying ? phaseInfo?.phase ?? 'IN' : isPaused ? 'Pausa' : 'Idle'
 
-  const { startBinaural, stop, setVolume: setAudioVolume } = useAudioEngine()
-  const { toggleSound, setVolume: setAmbientAudioVolume, activeSounds, stopAll } = useAmbientSounds()
+  const { startBinaural, stop, setVolume: setAudioVolume, pause, resume } = useAudioEngine()
+  const { toggleSound, setVolume: setAmbientAudioVolume, activeSounds, stopAll, pauseAll, resumeAll } = useAmbientSounds()
   useMetronomeSound(metronomeOn, isPlaying, metronomeVolume, phaseInfo?.phase, phaseInfo?.progress ?? 0, phaseInfo?.phaseDuration ?? 0)
 
   useEffect(() => {
-    setAmbientAudioVolume(0.25)
-  }, [setAmbientAudioVolume])
+    setAmbientAudioVolume((ambientVolume / 100) * 0.5)
+  }, [ambientVolume, setAmbientAudioVolume])
 
-  const resetSession = useCallback(() => {
+  useEffect(() => {
+    saveSettings({
+      selectedState,
+      volume,
+      ambientVolume,
+      metronomeVolume,
+      metronomeOn,
+    })
+  }, [selectedState, volume, ambientVolume, metronomeVolume, metronomeOn])
+
+  const stopSession = useCallback(() => {
     stop()
     stopAll()
     setMetronomeOn(false)
@@ -57,22 +71,36 @@ function App() {
   const handleSelectState = useCallback(
     (key) => {
       if (sessionState !== 'idle') {
-        resetSession()
+        stopSession()
       }
       setSelectedState(key)
     },
-    [sessionState, resetSession]
+    [sessionState, stopSession]
   )
 
-  const handleTogglePlay = useCallback(() => {
-    if (sessionState !== 'idle') {
-      resetSession()
-    } else {
+  const handlePlayPause = useCallback(() => {
+    if (sessionState === 'idle') {
       setElapsed(0)
       setCountdownRemaining(3)
       setSessionState('countdown')
+      return
     }
-  }, [sessionState, resetSession])
+    if (sessionState === 'countdown' || sessionState === 'playing') {
+      pause()
+      pauseAll()
+      setSessionState('paused')
+      return
+    }
+    if (sessionState === 'paused') {
+      if (countdownRemaining != null) {
+        setSessionState('countdown')
+      } else {
+        resume()
+        resumeAll()
+        setSessionState('playing')
+      }
+    }
+  }, [sessionState, pause, pauseAll, resume, resumeAll, countdownRemaining])
 
   // Countdown 3, 2, 1 poi avvio sessione (sempre con inhale)
   useEffect(() => {
@@ -104,6 +132,8 @@ function App() {
     return () => clearInterval(interval)
   }, [sessionState])
 
+  const modalFallback = useMemo(() => <div className="fixed inset-0 pointer-events-none" aria-hidden="true" />, [])
+
   const handleVolumeChange = useCallback(
     (e) => {
       const v = Number(e.target.value)
@@ -134,27 +164,31 @@ function App() {
         onMenuClick={() => setSettingsOpen(true)}
       />
 
-      <SciencePage isOpen={scienceOpen} onClose={() => setScienceOpen(false)} />
+      <Suspense fallback={modalFallback}>
+        <SciencePage isOpen={scienceOpen} onClose={() => setScienceOpen(false)} />
+      </Suspense>
 
-      <SettingsModal
-        isOpen={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        brainStates={brainStates}
-        brainStatesOrder={brainStatesOrder}
-        selectedState={selectedState}
-        onSelectState={handleSelectState}
-        ambientSoundsProps={{
-          activeSounds,
-          onToggle: toggleSound,
-          ambientVolume,
-          onVolumeChange: handleAmbientVolumeChange,
-          metronomeOn,
-          onMetronomeToggle: () => setMetronomeOn((v) => !v),
-          metronomeColor: currentState.color,
-          breathing: currentState.breathing,
-          isPlaying: isSessionActive,
-        }}
-      />
+      <Suspense fallback={modalFallback}>
+        <SettingsModal
+          isOpen={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+          brainStates={brainStates}
+          brainStatesOrder={brainStatesOrder}
+          selectedState={selectedState}
+          onSelectState={handleSelectState}
+          ambientSoundsProps={{
+            activeSounds,
+            onToggle: toggleSound,
+            ambientVolume,
+            onVolumeChange: handleAmbientVolumeChange,
+            metronomeOn,
+            onMetronomeToggle: () => setMetronomeOn((v) => !v),
+            metronomeColor: currentState.color,
+            breathing: currentState.breathing,
+            isPlaying: isSessionActive,
+          }}
+        />
+      </Suspense>
 
       <main className="pt-20 px-4 sm:px-6 pb-4 h-[calc(100vh-5rem)]">
         <div className="h-full max-w-6xl mx-auto flex flex-row gap-6">
@@ -190,12 +224,27 @@ function App() {
                 </div>
                 <span className="text-white/60 text-sm uppercase tracking-wider">Avvio sessione con inhale...</span>
               </div>
+            ) : isPaused ? (
+              <div className="flex flex-col items-center justify-center gap-4">
+                <div
+                  className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 flex items-center justify-center text-xl sm:text-2xl font-semibold uppercase tracking-wider"
+                  style={{
+                    borderColor: `${currentState.color}aa`,
+                    color: currentState.color,
+                    boxShadow: `0 0 24px ${currentState.color}40`,
+                  }}
+                >
+                  Pausa
+                </div>
+                <span className="text-white/60 text-sm uppercase tracking-wider">Riprendi quando vuoi</span>
+              </div>
             ) : (
               <>
                 {/* Pallini guida respiro */}
                 <BreathingDots
                   breathing={currentState.breathing}
                   isPlaying={isPlaying}
+                  isVisible={isPlaying || isPaused}
                   color={currentState.color}
                   elapsed={elapsed}
                 />
@@ -203,6 +252,7 @@ function App() {
                 <BreathingCircle
                   breathing={currentState.breathing}
                   isPlaying={isPlaying}
+                  isVisible={isPlaying || isPaused}
                   color={currentState.color}
                   size="large"
                   elapsed={elapsed}
@@ -275,8 +325,9 @@ function App() {
                 </div>
               </div>
               <PlayerControls
-                isPlaying={isSessionActive}
-                onTogglePlay={handleTogglePlay}
+                sessionState={sessionState}
+                onPlayPause={handlePlayPause}
+                onStop={stopSession}
                 color={currentState.color}
               />
             </div>

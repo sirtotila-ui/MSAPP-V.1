@@ -149,8 +149,17 @@ export function useAmbientSounds() {
     const v = Math.min(1, Math.max(0, gainValue))
     soundsRef.current.volumeRef = v
     if (soundsRef.current.masterGain) {
-      soundsRef.current.masterGain.gain.value = v
+      soundsRef.current.masterGain.gain.rampTo(v, 0.1)
     }
+  }, [])
+
+  const pauseAll = useCallback(() => {
+    soundsRef.current.masterGain?.gain.rampTo(0, 0.08)
+  }, [])
+
+  const resumeAll = useCallback(() => {
+    const v = soundsRef.current.volumeRef
+    soundsRef.current.masterGain?.gain.rampTo(v, 0.12)
   }, [])
 
   const stopAll = useCallback(() => {
@@ -167,5 +176,5 @@ export function useAmbientSounds() {
     return () => stopAll()
   }, [stopAll])
 
-  return { toggleSound, setVolume, activeSounds, stopAll }
+  return { toggleSound, setVolume, activeSounds, stopAll, pauseAll, resumeAll }
 }

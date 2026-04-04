@@ -8,9 +8,11 @@ import * as Tone from 'tone'
 export function useAudioEngine() {
   const oscillatorsRef = useRef(null)
   const gainNodeRef = useRef(null)
+  const lastConfigRef = useRef(null)
 
   const startBinaural = useCallback((baseFreq, binauralFreq) => {
     stop()
+    lastConfigRef.current = { baseFreq, binauralFreq }
 
     if (Tone.context.state !== 'running') {
       Tone.start()
@@ -80,11 +82,25 @@ export function useAudioEngine() {
     }
   }, [])
 
+  const pause = useCallback(() => {
+    if (oscillatorsRef.current) {
+      gainNodeRef.current?.gain.rampTo(0, 0.08)
+    }
+  }, [])
+
+  const resume = useCallback(() => {
+    if (oscillatorsRef.current) {
+      gainNodeRef.current?.gain.rampTo(0.35, 0.15)
+    } else if (lastConfigRef.current) {
+      startBinaural(lastConfigRef.current.baseFreq, lastConfigRef.current.binauralFreq)
+    }
+  }, [startBinaural])
+
   useEffect(() => {
     return () => {
       stop()
     }
   }, [stop])
 
-  return { startBinaural, stop, setVolume }
+  return { startBinaural, stop, setVolume, pause, resume }
 }

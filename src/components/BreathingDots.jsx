@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { getPhaseAndProgress } from '../utils/breathing'
 
-export function BreathingDots({ breathing, isPlaying, color, elapsed: elapsedProp }) {
+export function BreathingDots({ breathing, isPlaying, color, elapsed: elapsedProp, isVisible = true }) {
   const [elapsedLocal, setElapsedLocal] = useState(0)
   const elapsed = elapsedProp ?? elapsedLocal
 
@@ -13,7 +13,7 @@ export function BreathingDots({ breathing, isPlaying, color, elapsed: elapsedPro
     return () => clearInterval(interval)
   }, [isPlaying, breathing, elapsedProp])
 
-  if (!breathing || !isPlaying) {
+  if (!breathing || !isVisible) {
     return (
       <div className="flex gap-2 justify-center">
         {[1, 2, 3, 4].map((i) => (

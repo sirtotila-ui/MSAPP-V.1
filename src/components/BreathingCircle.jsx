@@ -28,7 +28,7 @@ function getPhaseAndScale(breathing, elapsed) {
   return { phase, scale }
 }
 
-export function BreathingCircle({ breathing, isPlaying, color, size = 'small', elapsed: elapsedProp }) {
+export function BreathingCircle({ breathing, isPlaying, color, size = 'small', elapsed: elapsedProp, isVisible = true }) {
   const [elapsedLocal, setElapsedLocal] = useState(0)
   const elapsed = elapsedProp ?? elapsedLocal
   const isLarge = size === 'large'
@@ -53,7 +53,7 @@ export function BreathingCircle({ breathing, isPlaying, color, size = 'small', e
           boxShadow: `0 0 16px ${color}40`,
         }}
         animate={{
-          scale: isPlaying ? scale : 0.6,
+          scale: isVisible ? scale : 0.6,
         }}
         transition={{
           duration: 0.15,
