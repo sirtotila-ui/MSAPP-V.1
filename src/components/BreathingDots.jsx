@@ -1,90 +1,71 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { getPhaseAndProgress } from '../utils/breathing'
 
-function getPhaseAndProgress(breathing, elapsed) {
-  const { inhale, hold = 0, exhale, hold2 = 0 } = breathing
-  const total = inhale + hold + exhale + hold2
-  const t = elapsed % total
-
-  if (t < inhale) {
-    return { phase: 'IN', progress: t, phaseDuration: inhale }
-  }
-  if (t < inhale + hold) {
-    return { phase: 'HOLD', progress: t - inhale, phaseDuration: hold }
-  }
-  if (t < inhale + hold + exhale) {
-    return { phase: 'OUT', progress: t - inhale - hold, phaseDuration: exhale }
-  }
-  return { phase: 'HOLD2', progress: t - inhale - hold - exhale, phaseDuration: hold2 }
-}
-
-export function BreathingDots({ breathing, isPlaying, color, holdVibrationOn = true }) {
-  const [elapsed, setElapsed] = useState(0)
+export function BreathingDots({ breathing, isPlaying, color, elapsed: elapsedProp }) {
+  const [elapsedLocal, setElapsedLocal] = useState(0)
+  const elapsed = elapsedProp ?? elapsedLocal
 
   useEffect(() => {
     if (!isPlaying || !breathing) return
-    const interval = setInterval(() => {
-      setElapsed((prev) => prev + 0.05)
-    }, 50)
+    if (elapsedProp != null) return
+    const interval = setInterval(() => setElapsedLocal((prev) => prev + 0.05), 50)
     return () => clearInterval(interval)
-  }, [isPlaying, breathing])
+  }, [isPlaying, breathing, elapsedProp])
 
   if (!breathing || !isPlaying) {
     return (
       <div className="flex gap-2 justify-center">
         {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className="w-2 h-2 rounded-full bg-white/20"
-          />
+          <div key={i} className="w-2 h-2 rounded-full bg-white/20" />
         ))}
       </div>
     )
   }
 
   const { phase, progress, phaseDuration } = getPhaseAndProgress(breathing, elapsed)
-  const { inhale } = breathing
-  const numDots = Math.max(1, Math.round(inhale))
+  const numDots = Math.max(1, Math.round(phaseDuration))
 
   let filledCount = 0
-  let opacity = 1
-  const isHoldPhase = phase === 'HOLD' || phase === 'HOLD2'
-  const tremble = holdVibrationOn && isHoldPhase
+  const isHold = phase === 'HOLD' || phase === 'HOLD2'
 
   if (phase === 'IN') {
     filledCount = Math.min(numDots, Math.floor(progress))
   } else if (phase === 'HOLD') {
     filledCount = numDots
   } else if (phase === 'OUT') {
-    filledCount = numDots
-    opacity = Math.max(0, 1 - progress / phaseDuration)
-  } else {
-    // HOLD2: pallini vuoti o svuotati
-    filledCount = 0
+    filledCount = Math.max(0, numDots - Math.floor(progress))
   }
+  // HOLD2: filledCount = 0
 
   return (
-    <div className="flex gap-2 sm:gap-3 justify-center items-center">
-      {Array.from({ length: numDots }).map((_, i) => (
-        <motion.div
-          key={i}
-          className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
-          style={{
-            backgroundColor: i < filledCount ? color : 'rgba(255,255,255,0.2)',
-            opacity: i < filledCount ? opacity : 0.3,
-            boxShadow: i < filledCount ? `0 0 8px ${color}60` : 'none',
-          }}
-          animate={tremble ? {
-            x: [0, -2, 2, -2, 0],
-            scale: [1, 1.08, 1],
-          } : {}}
-          transition={
-            tremble
-              ? { duration: 0.15, repeat: Infinity, repeatType: 'loop' }
-              : {}
-          }
-        />
-      ))}
+    <div className="flex gap-2 sm:gap-3 justify-center items-center flex-wrap">
+      {Array.from({ length: numDots }).map((_, i) => {
+        const filled = i < filledCount
+        const flash = isHold
+        return (
+          <motion.div
+            key={i}
+            className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
+            style={{
+              backgroundColor: filled ? color : 'rgba(255,255,255,0.2)',
+              opacity: filled ? 1 : 0.3,
+              boxShadow: filled ? `0 0 8px ${color}60` : 'none',
+            }}
+            animate={
+              flash
+                ? {
+                    opacity: filled ? [1, 0.5, 1] : [0.3, 0.15, 0.3],
+                    scale: [1, 1.1, 1],
+                  }
+                : {}
+            }
+            transition={
+              flash ? { duration: 0.6, repeat: Infinity, repeatType: 'reverse' } : {}
+            }
+          />
+        )
+      })}
     </div>
   )
 }

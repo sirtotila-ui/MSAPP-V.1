@@ -32,13 +32,14 @@ export function useAudioEngine() {
     const rightPanner = new Tone.Panner(1)
     rightOsc.connect(rightPanner)
 
-    // Common gain
-    const gainNode = new Tone.Gain(0.35).toDestination()
+    // Common gain with soft fade-in
+    const gainNode = new Tone.Gain(0).toDestination()
     leftPanner.connect(gainNode)
     rightPanner.connect(gainNode)
 
     leftOsc.start()
     rightOsc.start()
+    gainNode.gain.rampTo(0.35, 0.4)
 
     oscillatorsRef.current = { leftOsc, rightOsc, leftPanner, rightPanner }
     gainNodeRef.current = gainNode
@@ -57,21 +58,25 @@ export function useAudioEngine() {
   const stop = useCallback(() => {
     if (oscillatorsRef.current) {
       const { leftOsc, rightOsc, leftPanner, rightPanner } = oscillatorsRef.current
-      leftOsc.stop()
-      rightOsc.stop()
-      leftOsc.dispose()
-      rightOsc.dispose()
-      leftPanner.dispose()
-      rightPanner.dispose()
-      gainNodeRef.current?.dispose()
+      const gainNode = gainNodeRef.current
+      gainNode?.gain.rampTo(0, 0.08)
+      leftOsc.stop('+0.08')
+      rightOsc.stop('+0.08')
       oscillatorsRef.current = null
       gainNodeRef.current = null
+      setTimeout(() => {
+        leftOsc.dispose()
+        rightOsc.dispose()
+        leftPanner.dispose()
+        rightPanner.dispose()
+        gainNode?.dispose()
+      }, 100)
     }
   }, [])
 
   const setVolume = useCallback((gainValue) => {
     if (gainNodeRef.current) {
-      gainNodeRef.current.gain.value = Math.min(1, Math.max(0, gainValue))
+      gainNodeRef.current.gain.rampTo(Math.min(1, Math.max(0, gainValue)), 0.1)
     }
   }, [])
 

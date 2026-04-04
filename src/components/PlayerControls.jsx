@@ -1,4 +1,4 @@
-import { Play, Pause } from 'lucide-react'
+import { Play, Square } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export function PlayerControls({ isPlaying, onTogglePlay, color }) {
@@ -16,7 +16,7 @@ export function PlayerControls({ isPlaying, onTogglePlay, color }) {
       aria-label={isPlaying ? 'Stop' : 'Play'}
     >
       {isPlaying ? (
-        <Pause className="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="white" />
+        <Square className="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="white" />
       ) : (
         <Play className="w-7 h-7 sm:w-8 sm:h-8 text-white ml-0.5" fill="white" />
       )}

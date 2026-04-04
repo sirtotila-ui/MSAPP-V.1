@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
 function getPhaseAndScale(breathing, elapsed) {
+  if (!breathing) return { phase: 'OUT', scale: 0.6 }
   const { inhale, hold = 0, exhale, hold2 = 0 } = breathing
   const total = inhale + hold + exhale + hold2
-  const t = elapsed % total
+  const t = total > 0 ? elapsed % total : 0
 
   let phase = 'OUT'
   let scale = 0.6
@@ -18,7 +19,7 @@ function getPhaseAndScale(breathing, elapsed) {
   } else if (t < inhale + hold + exhale) {
     phase = 'OUT'
     const exhaleElapsed = t - inhale - hold
-    scale = 1 - (0.4 * exhaleElapsed) / exhale
+    scale = exhale > 0 ? 1 - (0.4 * exhaleElapsed) / exhale : 0.6
   } else {
     phase = 'HOLD'
     scale = 0.6
@@ -27,18 +28,17 @@ function getPhaseAndScale(breathing, elapsed) {
   return { phase, scale }
 }
 
-export function BreathingCircle({ breathing, isPlaying, color, size = 'small' }) {
-  const [elapsed, setElapsed] = useState(0)
+export function BreathingCircle({ breathing, isPlaying, color, size = 'small', elapsed: elapsedProp }) {
+  const [elapsedLocal, setElapsedLocal] = useState(0)
+  const elapsed = elapsedProp ?? elapsedLocal
   const isLarge = size === 'large'
 
   useEffect(() => {
     if (!isPlaying || !breathing) return
-
-    const interval = setInterval(() => {
-      setElapsed((prev) => prev + 0.05)
-    }, 50)
+    if (elapsedProp != null) return
+    const interval = setInterval(() => setElapsedLocal((prev) => prev + 0.05), 50)
     return () => clearInterval(interval)
-  }, [isPlaying, breathing])
+  }, [isPlaying, breathing, elapsedProp])
 
   const { phase, scale } = breathing
     ? getPhaseAndScale(breathing, elapsed)

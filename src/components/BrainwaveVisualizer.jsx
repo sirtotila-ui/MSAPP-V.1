@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useId, useMemo } from 'react'
 
 function generateSinePath(width, height, phase = 0) {
   const points = []
@@ -14,6 +14,7 @@ function generateSinePath(width, height, phase = 0) {
 }
 
 export function BrainwaveVisualizer({ isPlaying, frequency, color }) {
+  const gradientId = useId()
   const width = 200
   const height = 80
   const paths = useMemo(() => {
@@ -32,7 +33,7 @@ export function BrainwaveVisualizer({ isPlaying, frequency, color }) {
         preserveAspectRatio="none"
       >
         <defs>
-          <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor={color} stopOpacity="0.6" />
             <stop offset="50%" stopColor={color} stopOpacity="1" />
             <stop offset="100%" stopColor={color} stopOpacity="0.6" />
@@ -42,13 +43,13 @@ export function BrainwaveVisualizer({ isPlaying, frequency, color }) {
           <path
             d={pathD}
             fill="none"
-            stroke="url(#waveGradient)"
+            stroke={`url(#${gradientId})`}
             strokeWidth="2"
             strokeLinecap="round"
           >
             <animate
               attributeName="d"
-              dur="1.5s"
+              dur={frequency >= 18 ? '1.1s' : frequency >= 10 ? '1.3s' : '1.6s'}
               repeatCount="indefinite"
               values={paths.join(';')}
             />

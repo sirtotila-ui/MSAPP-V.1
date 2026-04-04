@@ -13,19 +13,23 @@ export function StateCard({ state, isSelected, onClick, size }) {
   const IconComponent = iconMap[state.icon] || Sun
   const isLarge = size === 'large'
   const Wrapper = isLarge ? motion.div : motion.button
+  const compactClass = isSelected
+    ? 'bg-white/12 border-white/30 scale-[1.03]'
+    : 'bg-black/40 border-white/10 hover:border-white/20'
 
   return (
     <Wrapper
       {...(!isLarge && { type: 'button', onClick })}
+      {...(!isLarge && { 'aria-pressed': isSelected })}
       className={`
-        rounded-2xl bg-black/40 backdrop-blur-sm border transition-all duration-300
+        rounded-2xl backdrop-blur-sm border transition-all duration-300
         flex flex-col items-center justify-center overflow-hidden
-        ${isLarge ? 'w-[320px] h-[320px] p-6 sm:w-72 sm:h-72 md:w-80 md:h-80' : 'w-20 h-20 min-w-[80px] min-h-[80px] p-2'}
+        ${isLarge ? 'w-[320px] h-[320px] p-6 sm:w-72 sm:h-72 md:w-80 md:h-80 bg-black/40' : `w-20 h-20 min-w-[80px] min-h-[80px] p-2 ${compactClass}`}
         touch-manipulation
       `}
       style={{
-        borderColor: state.color,
-        boxShadow: `0 0 24px ${state.color}40`,
+        borderColor: isLarge ? state.color : isSelected ? `${state.color}` : undefined,
+        boxShadow: isSelected ? `0 0 28px ${state.color}55` : `0 0 18px ${state.color}20`,
       }}
       {...(!isLarge && {
         whileHover: { scale: 1.03 },
@@ -58,6 +62,7 @@ export function StateCard({ state, isSelected, onClick, size }) {
             size={24}
           />
           <span className="text-xs font-medium text-white">{state.symbol}</span>
+          <span className="text-[10px] text-white/60 leading-none mt-0.5">{state.name}</span>
         </>
       )}
     </Wrapper>

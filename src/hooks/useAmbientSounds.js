@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import * as Tone from 'tone'
 
 /**
- * Hook for 5 ambient sounds that can be layered with binaural beats
- * Each sound can be toggled on/off independently, volume is global for all ambient
+ * Ambient sounds layerable with binaural beats.
+ * The goal is a soft, non-fatiguing texture rather than raw/noisy signals.
  */
 export function useAmbientSounds() {
   const soundsRef = useRef({ masterGain: null, sources: [], volumeRef: 0.25 })
@@ -29,30 +29,56 @@ export function useAmbientSounds() {
     let source
     switch (index) {
       case 0: {
-        // Pioggia
-        const noise = new Tone.Noise('pink')
-        const filter = new Tone.Filter(600, 'lowpass')
+        // Pioggia: texture scura e morbida
+        const noise = new Tone.Noise('brown')
+        const filter = new Tone.Filter(220, 'lowpass')
+        const gain = new Tone.Gain(0.3)
         noise.connect(filter)
-        filter.connect(masterGain)
+        filter.connect(gain)
+        gain.connect(masterGain)
         noise.start()
-        return { noise, filter }
+        return { noise, filter, gain }
       }
-      case 1:
-        source = new Tone.Noise('pink')
-        source.connect(masterGain)
-        source.start()
-        return source
-      case 2:
-        source = new Tone.Noise('white')
-        source.connect(masterGain)
-        source.start()
-        return source
+      case 1: {
+        // Rumore rosa: più vellutato e meno invasivo
+        const noise = new Tone.Noise('pink')
+        const filter = new Tone.Filter(700, 'lowpass')
+        const gain = new Tone.Gain(0.2)
+        noise.connect(filter)
+        filter.connect(gain)
+        gain.connect(masterGain)
+        noise.start()
+        return { noise, filter, gain }
+      }
+      case 2: {
+        // Rumore bianco: tagliato sugli acuti per evitare asprezza
+        const white = new Tone.Noise('white')
+        const filter = new Tone.Filter(1100, 'lowpass')
+        const gain = new Tone.Gain(0.14)
+        white.connect(filter)
+        filter.connect(gain)
+        gain.connect(masterGain)
+        white.start()
+        return { noise: white, filter, gain }
+      }
       case 3: {
-        // Pad ambient - oscillatore sinusoidale basso
-        source = new Tone.Oscillator(80, 'sine')
-        source.connect(masterGain)
-        source.start()
-        return source
+        // Pad ambient: due oscillatori morbidi con filtro modulato lentamente
+        const gain = new Tone.Gain(0.08)
+        const filter = new Tone.Filter(360, 'lowpass')
+        const lfo = new Tone.LFO(0.07, 280, 460)
+        const oscA = new Tone.Oscillator(110, 'sine')
+        const oscB = new Tone.Oscillator(165, 'triangle')
+        oscA.volume.value = -8
+        oscB.volume.value = -14
+        lfo.connect(filter.frequency)
+        lfo.start()
+        oscA.connect(filter)
+        oscB.connect(filter)
+        filter.connect(gain)
+        gain.connect(masterGain)
+        oscA.start()
+        oscB.start()
+        return { oscillators: [oscA, oscB], filter, gain, lfo }
       }
       default:
         source = new Tone.Noise('pink')
@@ -76,7 +102,18 @@ export function useAmbientSounds() {
           obj.noise.stop()
           obj.noise.dispose()
         }
+        if (obj.oscillators) {
+          obj.oscillators.forEach((osc) => {
+            osc.stop()
+            osc.dispose()
+          })
+        }
+        if (obj.osc) {
+          obj.osc.stop()
+          obj.osc.dispose()
+        }
         obj.filter?.dispose()
+        obj.gain?.dispose()
         obj.lfo?.stop()
         obj.lfo?.dispose()
       }

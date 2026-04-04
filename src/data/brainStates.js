@@ -24,7 +24,7 @@ export const brainStates = {
     binauralFreq: 6,
     baseFreq: 200,
     description: 'Creatività',
-    breathing: { inhale: 5.5, exhale: 5.5 },
+    breathing: { inhale: 6, exhale: 6 },
     icon: 'wave',
   },
   alpha: {
