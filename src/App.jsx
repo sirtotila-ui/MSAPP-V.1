@@ -190,8 +190,8 @@ function App() {
         />
       </Suspense>
 
-      <main className="pt-20 px-4 sm:px-6 pb-4 h-[calc(100vh-5rem)]">
-        <div className="h-full max-w-6xl mx-auto flex flex-row gap-6">
+      <main className="pt-16 sm:pt-20 px-3 sm:px-6 pb-4 sm:pb-6 min-h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)]">
+        <div className="h-full max-w-6xl mx-auto flex flex-row gap-4 sm:gap-6">
           {/* Left: suoni (simmetrici ai pacchetti) */}
           <div className="hidden md:flex flex-col gap-3 justify-center shrink-0">
             <AmbientSounds
@@ -208,12 +208,12 @@ function App() {
             />
           </div>
           {/* Center: player e tutto il resto, centrato verticalmente e orizzontalmente */}
-          <div className="flex-1 flex flex-col items-center justify-center gap-6 min-w-0">
+          <div className="flex-1 flex flex-col items-center justify-start sm:justify-center gap-5 sm:gap-6 min-w-0">
             {/* Countdown 3, 2, 1 prima di iniziare */}
             {isCountingDown && countdownRemaining != null ? (
-              <div className="flex flex-col items-center justify-center gap-4">
+              <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 pt-2">
                 <div
-                  className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 flex items-center justify-center text-6xl sm:text-7xl font-bold tabular-nums"
+                  className="w-28 h-28 sm:w-40 sm:h-40 rounded-full border-4 flex items-center justify-center text-5xl sm:text-7xl font-bold tabular-nums"
                   style={{
                     borderColor: currentState.color,
                     color: currentState.color,
@@ -225,9 +225,9 @@ function App() {
                 <span className="text-white/60 text-sm uppercase tracking-wider">Avvio sessione con inhale...</span>
               </div>
             ) : isPaused ? (
-              <div className="flex flex-col items-center justify-center gap-4">
+              <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 pt-2">
                 <div
-                  className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 flex items-center justify-center text-xl sm:text-2xl font-semibold uppercase tracking-wider"
+                  className="w-28 h-28 sm:w-40 sm:h-40 rounded-full border-4 flex items-center justify-center text-lg sm:text-2xl font-semibold uppercase tracking-wider"
                   style={{
                     borderColor: `${currentState.color}aa`,
                     color: currentState.color,
@@ -261,8 +261,8 @@ function App() {
             )}
 
             {/* Panel: name+freq left | wave (con volume sotto) | play right */}
-            <div className="w-full flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-black/40 backdrop-blur-xl rounded-3xl p-4 sm:p-6 border border-white/10 shadow-[0_20px_80px_rgba(0,0,0,0.35)]">
-              <div className="flex flex-col shrink-0">
+            <div className="w-full flex flex-col items-stretch sm:flex-row sm:items-center gap-4 sm:gap-6 bg-black/40 backdrop-blur-xl rounded-[1.75rem] sm:rounded-3xl p-4 sm:p-6 border border-white/10 shadow-[0_20px_80px_rgba(0,0,0,0.35)]">
+              <div className="flex flex-col items-center sm:items-start shrink-0 text-center sm:text-left">
                 <span className="text-sm font-medium text-white/70 uppercase tracking-wider">
                   {currentState.name}
                 </span>
@@ -280,47 +280,47 @@ function App() {
                   frequency={currentState.binauralFreq}
                   color={currentState.color}
                 />
-                <div className="flex items-center justify-between text-xs text-white/55 px-2">
+                <div className="flex items-center justify-between text-[11px] sm:text-xs text-white/55 px-1 sm:px-2 gap-3">
                   <span>Stato: {statusLabel}</span>
                   <span>Usa cuffie stereo</span>
                 </div>
                 {/* Volume sotto l'onda: stesse dimensioni, stesso inizio e fine */}
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-3">
-                    <span className="text-white/60 text-xs shrink-0 w-[5.5rem]">Volume</span>
+                <div className="flex flex-col gap-3">
+                  <div className="grid grid-cols-[1fr_auto] sm:grid-cols-[5.5rem_1fr_auto] items-center gap-x-3 gap-y-1">
+                    <span className="text-white/60 text-xs sm:shrink-0 sm:w-[5.5rem]">Volume</span>
+                    <span className="text-white/60 text-xs w-9 shrink-0 text-right sm:order-3">{volume}%</span>
                     <input
                       type="range"
                       min="0"
                       max="100"
                       value={volume}
                       onChange={handleVolumeChange}
-                      className="w-48 shrink-0"
+                      className="col-span-2 sm:col-span-1 w-full min-w-0"
                     />
-                    <span className="text-white/60 text-xs w-9 shrink-0 text-right">{volume}%</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-white/60 text-xs shrink-0 w-[5.5rem]">Vol. suoni</span>
+                  <div className="grid grid-cols-[1fr_auto] sm:grid-cols-[5.5rem_1fr_auto] items-center gap-x-3 gap-y-1">
+                    <span className="text-white/60 text-xs sm:shrink-0 sm:w-[5.5rem]">Vol. suoni</span>
+                    <span className="text-white/60 text-xs w-9 shrink-0 text-right sm:order-3">{ambientVolume}%</span>
                     <input
                       type="range"
                       min="0"
                       max="100"
                       value={ambientVolume}
                       onChange={(e) => handleAmbientVolumeChange(Number(e.target.value))}
-                      className="w-48 shrink-0"
+                      className="col-span-2 sm:col-span-1 w-full min-w-0"
                     />
-                    <span className="text-white/60 text-xs w-9 shrink-0 text-right">{ambientVolume}%</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-white/60 text-xs shrink-0 w-[5.5rem]">Vol. metronomo</span>
+                  <div className="grid grid-cols-[1fr_auto] sm:grid-cols-[5.5rem_1fr_auto] items-center gap-x-3 gap-y-1">
+                    <span className="text-white/60 text-xs sm:shrink-0 sm:w-[5.5rem]">Vol. metronomo</span>
+                    <span className="text-white/60 text-xs w-9 shrink-0 text-right sm:order-3">{metronomeVolume}%</span>
                     <input
                       type="range"
                       min="0"
                       max="100"
                       value={metronomeVolume}
                       onChange={handleMetronomeVolumeChange}
-                      className="w-48 shrink-0"
+                      className="col-span-2 sm:col-span-1 w-full min-w-0"
                     />
-                    <span className="text-white/60 text-xs w-9 shrink-0 text-right">{metronomeVolume}%</span>
                   </div>
                 </div>
               </div>

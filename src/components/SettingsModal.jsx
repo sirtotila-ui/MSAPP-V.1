@@ -16,12 +16,13 @@ export function SettingsModal({ isOpen, onClose, brainStates, brainStatesOrder, 
             onClick={onClose}
           />
           <motion.div
-            className="fixed bottom-0 left-0 right-0 z-[101] lg:hidden bg-black/95 backdrop-blur-xl rounded-t-2xl border-t border-white/10 p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] max-h-[70vh] overflow-auto"
+            className="fixed bottom-0 left-0 right-0 z-[101] lg:hidden bg-black/95 backdrop-blur-xl rounded-t-3xl border-t border-white/10 p-4 sm:p-6 pb-[calc(1.25rem+env(safe-area-inset-bottom))] max-h-[78vh] overflow-auto"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           >
+            <div className="w-10 h-1 rounded-full bg-white/15 mx-auto mb-4" />
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-white">Menu</h2>
               <button

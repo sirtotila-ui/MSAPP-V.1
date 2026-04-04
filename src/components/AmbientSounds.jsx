@@ -35,9 +35,9 @@ export function AmbientSounds({
     }
   }, [elapsed, isPlaying, metronomeOn])
   return (
-    <div className={`flex gap-3 shrink-0 ${compact ? 'flex-row items-center flex-wrap' : 'flex-col'}`}>
+    <div className={`flex gap-3 shrink-0 ${compact ? 'flex-col items-stretch' : 'flex-col'}`}>
       <span className="text-xs font-medium text-white/60 uppercase tracking-wider">Suoni</span>
-      <div className={`flex ${compact ? 'flex-row flex-wrap gap-2' : 'flex-col gap-3'}`}>
+      <div className={`flex ${compact ? 'flex-row flex-wrap gap-2 justify-center' : 'flex-col gap-3'}`}>
         {ambientSounds.map((sound, index) => {
           const isMetronome = index === 0
           const isActive = isMetronome ? metronomeOn : activeSounds[index - 1]
