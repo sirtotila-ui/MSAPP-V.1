@@ -1,10 +1,9 @@
-import { Leaf, Menu } from 'lucide-react'
+import { Menu } from 'lucide-react'
 
 export function Navbar({ onScienceClick, onMenuClick }) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 h-14 sm:h-16 flex items-center justify-between px-3 sm:px-6 bg-black/50 backdrop-blur-xl border-b border-white/10">
       <div className="flex items-center gap-2">
-        <Leaf className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
         <span className="font-semibold text-base sm:text-lg text-white text-glow">MindSeeds</span>
       </div>
       <div className="flex items-center gap-2">

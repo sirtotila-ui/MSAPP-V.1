@@ -322,10 +322,6 @@ function App() {
                   </div>
 
                   <div className="flex items-center gap-3 self-start xl:pl-4">
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2">
-                      <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Session</div>
-                      <div className="mt-1 text-sm font-medium text-white/80">{statusLabel}</div>
-                    </div>
                     <PlayerControls
                       sessionState={sessionState}
                       onPlayPause={handlePlayPause}
