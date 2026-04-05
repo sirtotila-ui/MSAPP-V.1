@@ -16,13 +16,23 @@ import { AmbientSounds } from './components/AmbientSounds'
 const SettingsModal = lazy(() => import('./components/SettingsModal').then((module) => ({ default: module.SettingsModal })))
 const SciencePage = lazy(() => import('./components/SciencePage').then((module) => ({ default: module.SciencePage })))
 const initialSettings = loadSettings() ?? {}
+const normalizeSliderValue = (value, fallback = 0) => {
+  const numericValue = Number(value)
+  if (!Number.isFinite(numericValue)) return fallback
+  return Math.min(100, Math.max(0, Math.round(numericValue / 10) * 10))
+}
+
+const getPremiumSliderStyle = (value, accentColor) => ({
+  '--slider-progress': `${normalizeSliderValue(value)}%`,
+  '--slider-accent': accentColor,
+})
 
 function App() {
   const [selectedState, setSelectedState] = useState(initialSettings.selectedState ?? 'alpha')
   const [sessionState, setSessionState] = useState('idle')
-  const [volume, setVolume] = useState(initialSettings.volume ?? 70)
-  const [ambientVolume, setAmbientVolume] = useState(initialSettings.ambientVolume ?? 50)
-  const [metronomeVolume, setMetronomeVolume] = useState(initialSettings.metronomeVolume ?? 50)
+  const [volume, setVolume] = useState(normalizeSliderValue(initialSettings.volume, 70))
+  const [ambientVolume, setAmbientVolume] = useState(normalizeSliderValue(initialSettings.ambientVolume, 50))
+  const [metronomeVolume, setMetronomeVolume] = useState(normalizeSliderValue(initialSettings.metronomeVolume, 50))
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [scienceOpen, setScienceOpen] = useState(false)
   const [metronomeOn, setMetronomeOn] = useState(initialSettings.metronomeOn ?? true)
@@ -136,7 +146,7 @@ function App() {
 
   const handleVolumeChange = useCallback(
     (e) => {
-      const v = Number(e.target.value)
+      const v = normalizeSliderValue(e.target.value, 70)
       setVolume(v)
       const gainValue = (v / 100) * 0.5
       setAudioVolume(gainValue)
@@ -146,16 +156,44 @@ function App() {
 
   const handleAmbientVolumeChange = useCallback(
     (v) => {
-      setAmbientVolume(v)
-      const gainValue = (v / 100) * 0.5
+      const normalizedValue = normalizeSliderValue(v, 50)
+      setAmbientVolume(normalizedValue)
+      const gainValue = (normalizedValue / 100) * 0.5
       setAmbientAudioVolume(gainValue)
     },
     [setAmbientAudioVolume]
   )
 
   const handleMetronomeVolumeChange = useCallback((e) => {
-    setMetronomeVolume(Number(e.target.value))
+    setMetronomeVolume(normalizeSliderValue(e.target.value, 50))
   }, [])
+
+  const premiumControls = [
+    {
+      id: 'master',
+      eyebrow: 'Master',
+      title: 'Binaural output',
+      description: 'Controlla il mix principale della sessione.',
+      value: volume,
+      onChange: handleVolumeChange,
+    },
+    {
+      id: 'ambience',
+      eyebrow: 'Ambience',
+      title: 'Rain, noise and pad',
+      description: 'Bilancia il layer ambientale di supporto.',
+      value: ambientVolume,
+      onChange: (e) => handleAmbientVolumeChange(Number(e.target.value)),
+    },
+    {
+      id: 'metronome',
+      eyebrow: 'Metronome',
+      title: 'Breathing timing pulse',
+      description: 'Regola il timing sonoro della respirazione guidata.',
+      value: metronomeVolume,
+      onChange: handleMetronomeVolumeChange,
+    },
+  ]
 
   return (
     <div className="min-h-screen min-h-[100dvh] bg-[#0a0a0a] pb-4">
@@ -190,8 +228,8 @@ function App() {
         />
       </Suspense>
 
-      <main className="pt-16 sm:pt-20 px-3 sm:px-6 pb-4 sm:pb-6 min-h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)]">
-        <div className="h-full max-w-6xl mx-auto flex flex-row gap-4 sm:gap-6">
+      <main className="pt-16 sm:pt-20 px-3 sm:px-6 pb-4 sm:pb-6 min-h-[calc(100vh-4rem)] sm:min-h-[calc(100vh-5rem)]">
+        <div className="max-w-6xl mx-auto flex flex-row gap-4 sm:gap-6">
           {/* Left: suoni (simmetrici ai pacchetti) */}
           <div className="hidden md:flex flex-col gap-3 justify-center shrink-0">
             <AmbientSounds
@@ -208,7 +246,7 @@ function App() {
             />
           </div>
           {/* Center: player e tutto il resto, centrato verticalmente e orizzontalmente */}
-          <div className="flex-1 flex flex-col items-center justify-start sm:justify-center gap-5 sm:gap-6 min-w-0">
+          <div className="flex-1 flex flex-col items-center justify-start gap-5 sm:gap-6 min-w-0 pt-2 sm:pt-4">
             {/* Countdown 3, 2, 1 prima di iniziare */}
             {isCountingDown && countdownRemaining != null ? (
               <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 pt-2">
@@ -239,15 +277,7 @@ function App() {
                 <span className="text-white/60 text-sm uppercase tracking-wider">Riprendi quando vuoi</span>
               </div>
             ) : (
-              <>
-                {/* Pallini guida respiro */}
-                <BreathingDots
-                  breathing={currentState.breathing}
-                  isPlaying={isPlaying}
-                  isVisible={isPlaying || isPaused}
-                  color={currentState.color}
-                  elapsed={elapsed}
-                />
+              <div className="flex w-full flex-col items-center gap-4 shrink-0">
                 {/* Indicatore IN / HOLD / OUT */}
                 <BreathingCircle
                   breathing={currentState.breathing}
@@ -257,79 +287,107 @@ function App() {
                   size="large"
                   elapsed={elapsed}
                 />
-              </>
+                {/* Pallini guida respiro */}
+                <BreathingDots
+                  breathing={currentState.breathing}
+                  isPlaying={isPlaying}
+                  isVisible={isPlaying || isPaused}
+                  color={currentState.color}
+                  elapsed={elapsed}
+                />
+              </div>
             )}
 
-            {/* Panel: name+freq left | wave (con volume sotto) | play right */}
-            <div className="w-full flex flex-col items-stretch sm:flex-row sm:items-center gap-4 sm:gap-6 bg-black/40 backdrop-blur-xl rounded-[1.75rem] sm:rounded-3xl p-4 sm:p-6 border border-white/10 shadow-[0_20px_80px_rgba(0,0,0,0.35)]">
-              <div className="flex flex-col items-center sm:items-start shrink-0 text-center sm:text-left">
-                <span className="text-sm font-medium text-white/70 uppercase tracking-wider">
-                  {currentState.name}
-                </span>
-                <span
-                  className="font-mono text-lg font-semibold"
-                  style={{ color: currentState.color, textShadow: `0 0 16px ${currentState.color}60` }}
-                >
-                  {currentState.binauralFreq} Hz
-                </span>
-                <span className="text-xs text-white/55 mt-1">{breathingPattern} respiri guidati</span>
-              </div>
-              <div className="flex-1 flex flex-col gap-3 w-full min-w-0">
-                <BrainwaveVisualizer
-                  isPlaying={isPlaying}
-                  frequency={currentState.binauralFreq}
-                  color={currentState.color}
-                />
-                <div className="flex items-center justify-between text-[11px] sm:text-xs text-white/55 px-1 sm:px-2 gap-3">
-                  <span>Stato: {statusLabel}</span>
-                  <span>Usa cuffie stereo</span>
-                </div>
-                {/* Volume sotto l'onda: stesse dimensioni, stesso inizio e fine */}
-                <div className="flex flex-col gap-3">
-                  <div className="grid grid-cols-[1fr_auto] sm:grid-cols-[5.5rem_1fr_auto] items-center gap-x-3 gap-y-1">
-                    <span className="text-white/60 text-xs sm:shrink-0 sm:w-[5.5rem]">Volume</span>
-                    <span className="text-white/60 text-xs w-9 shrink-0 text-right sm:order-3">{volume}%</span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={volume}
-                      onChange={handleVolumeChange}
-                      className="col-span-2 sm:col-span-1 w-full min-w-0"
-                    />
+            <div
+              className="w-full rounded-[1.9rem] border border-white/10 bg-black/45 p-4 shadow-[0_30px_110px_rgba(0,0,0,0.46)] backdrop-blur-2xl sm:rounded-[2rem] sm:p-6"
+              style={{
+                boxShadow: `0 30px 110px rgba(0,0,0,0.46), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 0 1px ${currentState.color}12`,
+              }}
+            >
+              <div className="flex flex-col gap-5">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
+                      <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-[2rem]">{currentState.name}</h2>
+                      <span
+                        className="font-mono text-lg font-semibold sm:text-xl"
+                        style={{ color: currentState.color, textShadow: `0 0 18px ${currentState.color}55` }}
+                      >
+                        {currentState.binauralFreq} Hz
+                      </span>
+                    </div>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-white/58">
+                      {currentState.description}. Sessione immersiva calibrata su {currentState.frequency} con pattern {breathingPattern}.
+                    </p>
                   </div>
-                  <div className="grid grid-cols-[1fr_auto] sm:grid-cols-[5.5rem_1fr_auto] items-center gap-x-3 gap-y-1">
-                    <span className="text-white/60 text-xs sm:shrink-0 sm:w-[5.5rem]">Vol. suoni</span>
-                    <span className="text-white/60 text-xs w-9 shrink-0 text-right sm:order-3">{ambientVolume}%</span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={ambientVolume}
-                      onChange={(e) => handleAmbientVolumeChange(Number(e.target.value))}
-                      className="col-span-2 sm:col-span-1 w-full min-w-0"
-                    />
-                  </div>
-                  <div className="grid grid-cols-[1fr_auto] sm:grid-cols-[5.5rem_1fr_auto] items-center gap-x-3 gap-y-1">
-                    <span className="text-white/60 text-xs sm:shrink-0 sm:w-[5.5rem]">Vol. metronomo</span>
-                    <span className="text-white/60 text-xs w-9 shrink-0 text-right sm:order-3">{metronomeVolume}%</span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={metronomeVolume}
-                      onChange={handleMetronomeVolumeChange}
-                      className="col-span-2 sm:col-span-1 w-full min-w-0"
+
+                  <div className="flex items-center gap-3 self-start xl:pl-4">
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2">
+                      <div className="text-[10px] uppercase tracking-[0.22em] text-white/40">Session</div>
+                      <div className="mt-1 text-sm font-medium text-white/80">{statusLabel}</div>
+                    </div>
+                    <PlayerControls
+                      sessionState={sessionState}
+                      onPlayPause={handlePlayPause}
+                      onStop={stopSession}
+                      color={currentState.color}
                     />
                   </div>
                 </div>
+
+                <div className="rounded-[1.5rem] border border-white/8 bg-white/[0.03] p-3 sm:p-4">
+                  <BrainwaveVisualizer
+                    isPlaying={isPlaying}
+                    frequency={currentState.binauralFreq}
+                    color={currentState.color}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between gap-3 px-1 text-[11px] uppercase tracking-[0.18em] text-white/38">
+                  <span>Best with stereo headphones</span>
+                  <span>{isPlaying ? 'Realtime neural playback' : 'Ready to begin'}</span>
+                </div>
+
+                <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+                  {premiumControls.map((control) => (
+                    <div
+                      key={control.id}
+                      className="rounded-[1.45rem] border border-white/8 bg-white/[0.035] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:px-5"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-[11px] uppercase tracking-[0.2em] text-white/42">{control.eyebrow}</p>
+                          <p className="mt-1 text-sm font-medium text-white/88">{control.title}</p>
+                          <p className="mt-1 text-xs leading-5 text-white/46">{control.description}</p>
+                        </div>
+                        <div
+                          className="shrink-0 rounded-full border px-3 py-1 text-xs font-medium text-white/85"
+                          style={{
+                            borderColor: `${currentState.color}30`,
+                            backgroundColor: `${currentState.color}12`,
+                            boxShadow: `0 0 18px ${currentState.color}18`,
+                          }}
+                        >
+                          {control.value}%
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          step="10"
+                          value={control.value}
+                          onChange={control.onChange}
+                          className="app-slider app-slider-premium w-full min-w-0"
+                          style={getPremiumSliderStyle(control.value, currentState.color)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <PlayerControls
-                sessionState={sessionState}
-                onPlayPause={handlePlayPause}
-                onStop={stopSession}
-                color={currentState.color}
-              />
             </div>
           </div>
 

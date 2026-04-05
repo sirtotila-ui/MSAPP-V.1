@@ -3,6 +3,10 @@ import { motion } from 'framer-motion'
 import { ambientSounds } from '../data/ambientSounds'
 import { MetronomeIcon } from './MetronomeIcon'
 
+const getSliderStyle = (value) => ({
+  '--slider-progress': `${value}%`,
+})
+
 export function AmbientSounds({
   activeSounds,
   onToggle,
@@ -83,9 +87,11 @@ export function AmbientSounds({
               type="range"
               min="0"
               max="100"
+              step="10"
               value={ambientVolume}
               onChange={(e) => onVolumeChange(Number(e.target.value))}
-              className="flex-1 w-20 h-1.5"
+              className="app-slider flex-1 w-20"
+              style={getSliderStyle(ambientVolume)}
             />
             <span className="text-xs text-white/60 w-8">{ambientVolume}%</span>
           </div>

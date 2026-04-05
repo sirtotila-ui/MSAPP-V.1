@@ -27,55 +27,108 @@ input:focus-visible {
   text-shadow: 0 0 24px rgba(255, 255, 255, 0.5), 0 0 48px rgba(255, 255, 255, 0.2);
 }
 
-/* Custom range slider - light for dark theme */
-input[type="range"] {
+/* Premium stepped slider for dark UI */
+input[type="range"].app-slider {
+  --slider-progress: 50%;
+  --slider-accent: rgba(255, 255, 255, 0.92);
   -webkit-appearance: none;
   appearance: none;
+  height: 2rem;
+  border-radius: 999px;
+  position: relative;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--slider-accent) 96%, white) 0,
+      color-mix(in srgb, var(--slider-accent) 76%, white) var(--slider-progress),
+      rgba(255, 255, 255, 0.08) var(--slider-progress),
+      rgba(255, 255, 255, 0.08) 100%
+    ),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03)),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent calc(10% - 1px),
+      rgba(255, 255, 255, 0.08) calc(10% - 1px),
+      rgba(255, 255, 255, 0.08) 10%
+    );
+  background-size: 100% 0.4rem, 100% 0.4rem, 100% 0.4rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+
+input[type="range"].app-slider::-webkit-slider-runnable-track {
+  height: 0.4rem;
+  border-radius: 999px;
   background: transparent;
 }
 
-input[type="range"]::-webkit-slider-track {
-  height: 6px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.15);
-}
-
-input[type="range"]::-webkit-slider-thumb {
+input[type="range"].app-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  margin-top: -0.38rem;
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--slider-accent) 14%, transparent),
+    0 10px 24px rgba(0, 0, 0, 0.38);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+input[type="range"].app-slider::-moz-range-track {
+  height: 0.4rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+input[type="range"].app-slider::-moz-range-progress {
+  height: 0.4rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--slider-accent) 96%, white),
+    color-mix(in srgb, var(--slider-accent) 76%, white)
+  );
+}
+
+input[type="range"].app-slider::-moz-range-thumb {
+  width: 1.15rem;
+  height: 1.15rem;
   border-radius: 50%;
   background: #fff;
   cursor: pointer;
-  margin-top: -6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--slider-accent) 14%, transparent),
+    0 10px 24px rgba(0, 0, 0, 0.38);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-input[type="range"]::-moz-range-track {
-  height: 6px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.15);
-}
-
-input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #fff;
-  cursor: pointer;
-  border: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-input[type="range"]:hover::-webkit-slider-thumb {
+input[type="range"].app-slider:hover::-webkit-slider-thumb {
   transform: scale(1.08);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 0 0 8px color-mix(in srgb, var(--slider-accent) 20%, transparent),
+    0 12px 28px rgba(0, 0, 0, 0.42);
 }
 
-input[type="range"]:hover::-moz-range-thumb {
+input[type="range"].app-slider:hover::-moz-range-thumb {
   transform: scale(1.08);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 0 0 8px color-mix(in srgb, var(--slider-accent) 20%, transparent),
+    0 12px 28px rgba(0, 0, 0, 0.42);
+}
+
+input[type="range"].app-slider:focus-visible {
+  outline: none;
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--slider-accent) 22%, transparent));
+}
+
+input[type="range"].app-slider.app-slider-premium {
+  height: 2.1rem;
 }
