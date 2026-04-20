@@ -36,7 +36,7 @@ export const brainStates = {
     binauralFreq: 10,
     baseFreq: 250,
     description: 'Calma Attiva',
-    breathing: { inhale: 4, hold: 4, exhale: 4, hold2: 4 },
+    breathing: { inhale: 5, exhale: 5 },
     icon: 'sun',
   },
   beta: {

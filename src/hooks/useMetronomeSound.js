@@ -52,7 +52,10 @@ export function useMetronomeSound(metronomeOn, isPlaying, volume = 50, phase, pr
           osc.dispose()
           gain.dispose()
         }
-      } catch (_) {}
+      } catch (error) {
+        // Ignore occasional audio context race during rapid toggles.
+        void error
+      }
     }
   }, [metronomeOn, isPlaying, normalizedVolume, phase, progress, phaseDuration])
 }

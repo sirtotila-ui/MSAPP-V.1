@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ambientSounds } from '../data/ambientSounds'
 import { MetronomeIcon } from './MetronomeIcon'
@@ -21,8 +21,6 @@ export function AmbientSounds({
   showVolumeBar = true,
 }) {
   const [elapsed, setElapsed] = useState(0)
-  const [tick, setTick] = useState(0)
-  const lastTickRef = useRef(-1)
 
   useEffect(() => {
     if (!isPlaying || !breathing) return
@@ -30,14 +28,7 @@ export function AmbientSounds({
     return () => clearInterval(interval)
   }, [isPlaying, breathing])
 
-  useEffect(() => {
-    if (!isPlaying || !metronomeOn) return
-    const s = Math.floor(elapsed)
-    if (s !== lastTickRef.current && s >= 0) {
-      lastTickRef.current = s
-      setTick((t) => t + 1)
-    }
-  }, [elapsed, isPlaying, metronomeOn])
+  const metronomeTickKey = metronomeOn && isPlaying ? Math.max(0, Math.floor(elapsed)) : 0
   return (
     <div className={`flex gap-3 shrink-0 ${compact ? 'flex-col items-stretch' : 'flex-col'}`}>
       <span className="text-xs font-medium text-white/60 uppercase tracking-wider">Suoni</span>
@@ -65,7 +56,7 @@ export function AmbientSounds({
             >
               {isMetronome ? (
                 <motion.span
-                  key={metronomeOn && isPlaying ? tick : 0}
+                  key={metronomeTickKey}
                   style={isActive && metronomeColor ? { color: metronomeColor } : undefined}
                   animate={metronomeOn && isPlaying ? { rotate: [-4, 4, -4], scale: [1, 1.1, 1] } : {}}
                   transition={{ duration: 0.15, ease: 'easeOut' }}

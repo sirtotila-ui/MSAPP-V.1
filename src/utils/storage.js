@@ -14,5 +14,8 @@ export function saveSettings(settings) {
   if (typeof window === 'undefined') return
   try {
     window.localStorage.setItem(APP_SETTINGS_KEY, JSON.stringify(settings))
-  } catch {}
+  } catch (error) {
+    // Storage can fail in private mode or restricted environments.
+    void error
+  }
 }

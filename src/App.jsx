@@ -49,7 +49,6 @@ function App() {
   const breathingPattern = [breathing?.inhale, breathing?.hold, breathing?.exhale, breathing?.hold2]
     .filter((value) => value != null && value > 0)
     .join(' • ')
-  const statusLabel = isCountingDown ? 'Pronto' : isPlaying ? phaseInfo?.phase ?? 'IN' : isPaused ? 'Pausa' : 'Idle'
 
   const { startBinaural, stop, setVolume: setAudioVolume, pause, resume } = useAudioEngine()
   const { toggleSound, setVolume: setAmbientAudioVolume, activeSounds, stopAll, pauseAll, resumeAll } = useAmbientSounds()
@@ -116,12 +115,14 @@ function App() {
   useEffect(() => {
     if (sessionState !== 'countdown' || countdownRemaining == null) return
     if (countdownRemaining === 0) {
-      setCountdownRemaining(null)
-      startBinaural(currentState.baseFreq, currentState.binauralFreq)
-      setAudioVolume((volume / 100) * 0.5)
-      setElapsed(0)
-      setSessionState('playing')
-      return
+      const t = setTimeout(() => {
+        setCountdownRemaining(null)
+        startBinaural(currentState.baseFreq, currentState.binauralFreq)
+        setAudioVolume((volume / 100) * 0.5)
+        setElapsed(0)
+        setSessionState('playing')
+      }, 0)
+      return () => clearTimeout(t)
     }
     const t = setTimeout(() => setCountdownRemaining((c) => c - 1), 1000)
     return () => clearTimeout(t)

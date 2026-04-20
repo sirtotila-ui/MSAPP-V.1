@@ -10,6 +10,25 @@ export function useAudioEngine() {
   const gainNodeRef = useRef(null)
   const lastConfigRef = useRef(null)
 
+  const stop = useCallback(() => {
+    if (oscillatorsRef.current) {
+      const { leftOsc, rightOsc, leftPanner, rightPanner } = oscillatorsRef.current
+      const gainNode = gainNodeRef.current
+      gainNode?.gain.rampTo(0, 0.08)
+      leftOsc.stop('+0.08')
+      rightOsc.stop('+0.08')
+      oscillatorsRef.current = null
+      gainNodeRef.current = null
+      setTimeout(() => {
+        leftOsc.dispose()
+        rightOsc.dispose()
+        leftPanner.dispose()
+        rightPanner.dispose()
+        gainNode?.dispose()
+      }, 100)
+    }
+  }, [])
+
   const startBinaural = useCallback((baseFreq, binauralFreq) => {
     stop()
     lastConfigRef.current = { baseFreq, binauralFreq }
@@ -55,26 +74,7 @@ export function useAudioEngine() {
       rightPanner.dispose()
       gainNode.dispose()
     }
-  }, [])
-
-  const stop = useCallback(() => {
-    if (oscillatorsRef.current) {
-      const { leftOsc, rightOsc, leftPanner, rightPanner } = oscillatorsRef.current
-      const gainNode = gainNodeRef.current
-      gainNode?.gain.rampTo(0, 0.08)
-      leftOsc.stop('+0.08')
-      rightOsc.stop('+0.08')
-      oscillatorsRef.current = null
-      gainNodeRef.current = null
-      setTimeout(() => {
-        leftOsc.dispose()
-        rightOsc.dispose()
-        leftPanner.dispose()
-        rightPanner.dispose()
-        gainNode?.dispose()
-      }, 100)
-    }
-  }, [])
+  }, [stop])
 
   const setVolume = useCallback((gainValue) => {
     if (gainNodeRef.current) {

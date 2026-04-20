@@ -117,7 +117,10 @@ export function useAmbientSounds() {
         obj.lfo?.stop()
         obj.lfo?.dispose()
       }
-    } catch (_) {}
+    } catch (error) {
+      // Safe cleanup: nodes may already be stopped/disposed.
+      void error
+    }
   }, [])
 
   const toggleSound = useCallback((soundIndex) => {
